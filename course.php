@@ -27,16 +27,32 @@ require_once("../../config.php");
 
 require_login();
 
-$idnumber = required_param('idnumber', PARAM_TEXT);  // Course idnumber required
+$home = new moodle_url('/'); // Default redirect
+
+// They can give us the required course (short)name, idnumber or id (in order of priority)
+$name = optional_param('name', '', PARAM_TEXT);
+$idnumber = optional_param('idnumber', '', PARAM_RAW);
+$id = optional_param('id', 0, PARAM_INT);
+
+$params = array();
+if (!empty($name)) {
+	$params = array('shortname' => $name);
+} else if (!empty($idnumber)) {
+	$params = array('idnumber' => $idnumber);
+} else if (!empty($id)) {
+	$params = array('id' => $id);
+}else {
+	redirect($home);
+}
 
 // Validate the given course and get it's id
-$course = $DB->get_record('course', array('idnumber' => $idnumber), 'id');
+$course = $DB->get_record('course', $params, 'id');
 if ($course == null) {
-	redirect(new moodle_url('/'));
+	redirect($home);
 }
 $id = $course->id;
 
-// Get any meta-linked parent
+// Swap the ID if there is any (visible) meta-linked parent section
 $sql = 'SELECT parent.id FROM {enrol} e'
 		. ' JOIN {course} parent ON parent.id = e.courseid'
 		. ' WHERE e.enrol = "meta"'
