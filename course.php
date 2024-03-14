@@ -45,25 +45,16 @@ if (!empty($name)) {
 	redirect($home);
 }
 
-// Validate the given course and get it's id
+
+// Validate the given course and get its id
 $course = $DB->get_record('course', $params, 'id');
 if ($course == null) {
 	redirect($home);
 }
 $id = $course->id;
 
-// Swap the ID if there is any (visible) meta-linked parent section
-$sql = 'SELECT parent.id FROM {enrol} e'
-		. ' JOIN {course} parent ON parent.id = e.courseid'
-		. ' WHERE e.enrol = "meta"'
-		. '   AND e.customint1 = ?'
-		. '   AND parent.shortname LIKE "% (%:%)"'
-		. '   AND parent.idnumber LIKE "%.%"'
-		. '   AND parent.visible = 1';
-$db_ret = $DB->get_records_sql($sql, array($id));
-foreach ($db_ret as $course) {
-	$id = $course->id;
-}
+require_once($CFG->dirroot . "/local/obu_metalinking/lib.php");
+$id = get_teaching_course_id($id);
 
 // Let's go!
 redirect(new moodle_url('/course/view.php?id=' . $id));
