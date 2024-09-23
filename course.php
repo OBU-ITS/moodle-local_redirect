@@ -54,7 +54,7 @@ if ($course == null) {
 $id = $course->id;
 
 require_once($CFG->dirroot . "/local/obu_metalinking/lib.php");
-$id = get_teaching_course_id($id);
+$id = local_obu_metalinking_get_teaching_course_id($id);
 
 // Let's go!
 redirect(new moodle_url('/course/view.php?id=' . $id));
